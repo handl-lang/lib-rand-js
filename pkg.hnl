@@ -1,1 +1,3 @@
-{ deps: { rand: "branch:main" } }
+-- lib-rand-js: modules this package provides (entry defaults to
+-- src/index.hnl; N modules resolve to src/<name>/index.hnl).
+{ deps: { rand: "branch:main" }, modules: ["rand-js"] }
