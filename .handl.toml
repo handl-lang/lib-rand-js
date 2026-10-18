@@ -1,0 +1,5 @@
+[dependencies]
+rand = { path = "../lib-rand/src" }
+
+# own package
+rand-js = { path = "src" }
