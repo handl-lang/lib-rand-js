@@ -6,7 +6,7 @@
 
 [[repos]]
 name = "handl-lang/lib-rand-js"
-dir = "/home/luis/GitHub/handl-lang/lib-rand-js"
+dir = "~//GitHub/handl-lang/lib-rand-js"
 branch = "refs/heads/main"
   [repos.runner]
   kind = "script"
