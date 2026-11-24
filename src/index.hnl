@@ -30,7 +30,7 @@ do {
   -- Internal list helpers (same shapes as rand-c)
   -- -----------------------------------------------------------------------
 
-  arr_len :: (xs) ~> do {
+  arr_len := (xs) ~> do {
     while { xs: xs, n: 0 } {
       [xs, n] ~> match xs {
         []: { out: n },
@@ -39,7 +39,7 @@ do {
     }
   }
 
-  arr_rev :: (xs) ~> do {
+  arr_rev := (xs) ~> do {
     while { xs: xs, acc: [] } {
       [xs, acc] ~> match xs {
         []: { out: acc },
@@ -48,7 +48,7 @@ do {
     }
   }
 
-  arr_take :: (xs, n) ~> do {
+  arr_take := (xs, n) ~> do {
     while { xs: xs, n: n, acc: [] } {
       [xs, n, acc] ~> if n <= 0 {
         { out: arr_rev(acc) }
@@ -61,7 +61,7 @@ do {
     }
   }
 
-  arr_drop :: (xs, n) ~> do {
+  arr_drop := (xs, n) ~> do {
     while { xs: xs, n: n } {
       [xs, n] ~> if n <= 0 {
         { out: xs }
@@ -74,7 +74,7 @@ do {
     }
   }
 
-  arr_concat :: (a, b) ~> do {
+  arr_concat := (a, b) ~> do {
     while { xs: arr_rev(a), acc: b } {
       [xs, acc] ~> match xs {
         []: { out: acc },
@@ -83,9 +83,9 @@ do {
     }
   }
 
-  arr_remove_at :: (xs, i) ~> arr_concat(arr_take(xs, i), arr_drop(xs, i + 1))
+  arr_remove_at := (xs, i) ~> arr_concat(arr_take(xs, i), arr_drop(xs, i + 1))
 
-  arr_sum :: (xs) ~> do {
+  arr_sum := (xs) ~> do {
     while { xs: xs, acc: 0 } {
       [xs, acc] ~> match xs {
         []: { out: acc },
@@ -100,22 +100,22 @@ do {
 
   -- One 32-bit draw: `Math.random()` is `[0, 1)`; `floor(r * 2^32)` is
   -- `[0, 2^32)` — integer-valued, so `%`/`/` below stay exact.
-  next_u32 :: () ~> do {
-    r = call("Math", "random", [], [], "js_number", false)
+  next_u32 := () ~> do {
+    r := call("Math", "random", [], [], "js_number", false)
     call("Math", "floor", [r * 4294967296], ["js_number"], "js_number", false)
   }
 
-  js_sqrt :: (x) ~> call("Math", "sqrt", [x], ["js_number"], "js_number", false)
+  js_sqrt := (x) ~> call("Math", "sqrt", [x], ["js_number"], "js_number", false)
 
-  js_log :: (x) ~> call("Math", "log", [x], ["js_number"], "js_number", false)
+  js_log := (x) ~> call("Math", "log", [x], ["js_number"], "js_number", false)
 
-  js_cos :: (x) ~> call("Math", "cos", [x], ["js_number"], "js_number", false)
+  js_cos := (x) ~> call("Math", "cos", [x], ["js_number"], "js_number", false)
 
-  js_exp :: (x) ~> call("Math", "exp", [x], ["js_number"], "js_number", false)
+  js_exp := (x) ~> call("Math", "exp", [x], ["js_number"], "js_number", false)
 
   -- pi as a literal (`Math.PI` is a property, and `js.call` only
   -- dispatches functions).
-  PI :: 3.141592653589793
+  PI := 3.141592653589793
 
   -- Seeded PRNG: mix `(seed, k)` into an LCG state, then run four
   -- Numerical-Recipes rounds. `seed`/`k` are first reduced mod 2^32 so
@@ -123,42 +123,42 @@ do {
   -- `s * 1664525 + 1013904223` stays below ~7.2e15 < 2^53, hence exact
   -- in f64. Deterministic per `(seed, k)` — the same index always draws
   -- the same value, which is what the `seeded_*` contract needs.
-  _smix :: (seed, k) ~> do {
-    s0 = (((seed % 4294967296) + (k % 4294967296)) % 4294967296)
-    s1 = ((s0 + 4294967296) % 4294967296)
-    r1 = (s1 * 1664525 + 1013904223) % 4294967296
-    r2 = (r1 * 1664525 + 1013904223) % 4294967296
-    r3 = (r2 * 1664525 + 1013904223) % 4294967296
-    r4 = (r3 * 1664525 + 1013904223) % 4294967296
+  _smix := (seed, k) ~> do {
+    s0 := (((seed % 4294967296) + (k % 4294967296)) % 4294967296)
+    s1 := ((s0 + 4294967296) % 4294967296)
+    r1 := (s1 * 1664525 + 1013904223) % 4294967296
+    r2 := (r1 * 1664525 + 1013904223) % 4294967296
+    r3 := (r2 * 1664525 + 1013904223) % 4294967296
+    r4 := (r3 * 1664525 + 1013904223) % 4294967296
     r4
   }
 
   -- Core selection primitives shared by other arrows.
-  pick :: (xs) ~> do {
-    i = next_u32() % arr_len(xs)
+  pick := (xs) ~> do {
+    i := next_u32() % arr_len(xs)
     xs[i]
   }
 
-  sample :: (xs, count) ~> do {
+  sample := (xs, count) ~> do {
     while { xs: xs, n: count, acc: [] } {
       [xs, n, acc] ~> if n <= 0 || arr_len(xs) == 0 {
         { out: arr_rev(acc) }
       } else {
-        i = next_u32() % arr_len(xs)
-        x = xs[i]
+        i := next_u32() % arr_len(xs)
+        x := xs[i]
         { state: { xs: arr_remove_at(xs, i), n: n - 1, acc: [x, ...acc] } }
       }
     }
   }
 
-  seeded_sample :: (seed, xs, count) ~> do {
+  seeded_sample := (seed, xs, count) ~> do {
     while { xs: xs, n: count, k: 0, acc: [] } {
       [xs, n, k, acc] ~> if n <= 0 || arr_len(xs) == 0 {
         { out: arr_rev(acc) }
       } else {
-        r = _smix(seed, k)
-        i = r % arr_len(xs)
-        x = xs[i]
+        r := _smix(seed, k)
+        i := r % arr_len(xs)
+        x := xs[i]
         { state: { xs: arr_remove_at(xs, i), n: n - 1, k: k + 1, acc: [x, ...acc] } }
       }
     }
@@ -174,7 +174,7 @@ do {
 
     -- Generate a random float in `[0, max)`.
     float: (max) ~> do {
-      u = next_u32()
+      u := next_u32()
       (u / 4294967296) * max
     },
 
@@ -186,23 +186,23 @@ do {
 
     -- Pick one random element from weighted arrays.
     weighted_pick: (weights, items) ~> do {
-      n = arr_len(weights)
+      n := arr_len(weights)
       if n == 0 || n != arr_len(items) {
         null
       } else {
         do {
-          total = arr_sum(weights)
+          total := arr_sum(weights)
           if total <= 0 {
             null
           } else {
             do {
-              r = next_u32() % total
+              r := next_u32() % total
               while { i: 0, cum: 0 } {
                 [i, cum] ~> if i >= n {
                   { out: null }
                 } else {
-                  w = weights[i]
-                  c = cum + w
+                  w := weights[i]
+                  c := cum + w
                   if r < c {
                     { out: items[i] }
                   } else {
@@ -246,7 +246,7 @@ do {
 
     -- Generate a random string of `len` characters from `charset`.
     string: (len, charset) ~> do {
-      cs = char.chars(charset)
+      cs := char.chars(charset)
       while { n: len, acc: "" } {
         [n, acc] ~> if n <= 0 {
           { out: acc }
@@ -259,28 +259,28 @@ do {
     -- Generate a normally distributed number with `mean` and `stddev`.
     -- Box-Muller, same shape as rand-c (`+1` guards `log(0)`).
     gauss: (mean, stddev) ~> do {
-      u1 = (next_u32() + 1) / 4294967296
-      u2 = (next_u32() + 1) / 4294967296
-      r = js_sqrt(0 - 2 * js_log(u1))
-      theta = 2 * PI * u2
-      z = r * js_cos(theta)
+      u1 := (next_u32() + 1) / 4294967296
+      u2 := (next_u32() + 1) / 4294967296
+      r := js_sqrt(0 - 2 * js_log(u1))
+      theta := 2 * PI * u2
+      z := r * js_cos(theta)
       mean + stddev * z
     },
 
     -- Generate an exponentially distributed non-negative number with `lambda`.
     exponential: (lambda) ~> do {
-      u = (next_u32() + 1) / 4294967296
+      u := (next_u32() + 1) / 4294967296
       (0 - js_log(u)) / lambda
     },
 
     -- Generate a Poisson-distributed non-negative integer with `lambda`.
     poisson: (lambda) ~> do {
-      threshold = js_exp(0 - lambda)
+      threshold := js_exp(0 - lambda)
       while { p: 1.0, k: 0 } {
         [p, k] ~> if p <= threshold {
           { out: k }
         } else {
-          u = next_u32() / 4294967296
+          u := next_u32() / 4294967296
           { state: { p: p * u, k: k + 1 } }
         }
       }
@@ -292,7 +292,7 @@ do {
         [i, successes] ~> if i >= n {
           { out: successes }
         } else {
-          u = next_u32() / 4294967296
+          u := next_u32() / 4294967296
           if u < p {
             { state: { i: i + 1, successes: successes + 1 } }
           } else {
@@ -310,12 +310,12 @@ do {
     seeded_bool: (seed) ~> _smix(seed, 0) % 2 == 0,
 
     seeded_pick: (seed, xs) ~> do {
-      i = _smix(seed, 0) % arr_len(xs)
+      i := _smix(seed, 0) % arr_len(xs)
       xs[i]
     },
 
     seeded_choice: (seed, xs, count) ~> do {
-      n = arr_len(xs)
+      n := arr_len(xs)
       if n == 0 {
         []
       } else {
@@ -324,8 +324,8 @@ do {
             [m, k, acc] ~> if m <= 0 {
               { out: arr_rev(acc) }
             } else {
-              r = _smix(seed, k)
-              i = r % n
+              r := _smix(seed, k)
+              i := r % n
               { state: { m: m - 1, k: k + 1, acc: [xs[i], ...acc] } }
             }
           }
@@ -338,8 +338,8 @@ do {
     seeded_shuffle: (seed, xs) ~> seeded_sample(seed, xs, arr_len(xs)),
 
     seeded_string: (seed, len, charset) ~> do {
-      cs = char.chars(charset)
-      m = arr_len(cs)
+      cs := char.chars(charset)
+      m := arr_len(cs)
       if m == 0 {
         ""
       } else {
@@ -348,8 +348,8 @@ do {
             [n, k, acc] ~> if n <= 0 {
               { out: acc }
             } else {
-              r = _smix(seed, k)
-              i = r % m
+              r := _smix(seed, k)
+              i := r % m
               { state: { n: n - 1, k: k + 1, acc: acc + cs[i] } }
             }
           }
@@ -358,13 +358,13 @@ do {
     },
 
     seeded_gauss: (seed, mean, stddev) ~> do {
-      s1 = _smix(seed, 0)
-      s2 = _smix(seed, 1)
-      u1 = (s1 + 1) / 4294967296
-      u2 = (s2 + 1) / 4294967296
-      r = js_sqrt(0 - 2 * js_log(u1))
-      theta = 2 * PI * u2
-      z = r * js_cos(theta)
+      s1 := _smix(seed, 0)
+      s2 := _smix(seed, 1)
+      u1 := (s1 + 1) / 4294967296
+      u2 := (s2 + 1) / 4294967296
+      r := js_sqrt(0 - 2 * js_log(u1))
+      theta := 2 * PI * u2
+      z := r * js_cos(theta)
       mean + stddev * z
     }
   }
