@@ -29,7 +29,7 @@ Pure `.hnl`, single module (`src/index.hnl`, all 23 contract arrows).
 HNL=../host-cli/target/debug/hnl scripts/hnl-gate.sh
 ```
 
-CI skips the gate while `src/` has no `.hnl` sources (see `ci.sh`).
+CI skips the gate while `src/` has no `.hnl` sources (see `bupha.toml`).
 
 ## License
 
