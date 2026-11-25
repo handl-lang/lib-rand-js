@@ -9,7 +9,7 @@ Pure `.hnl`, single module (`src/index.hnl`, all 23 contract arrows).
 | --- | --- |
 | `src/index.hnl` | all 23 contract arrows in one module |
 | `pkg.hnl` | manifest — `modules: ["rand-js"]`, deps `rand` + `js` |
-| `scripts/hnl-gate.sh`, `ci.sh` | the gate / bupha entry |
+| `scripts/hnl-gate.sh`, `workflows/gate.yaml` | the gate / bupha entry |
 
 ## Contract
 
