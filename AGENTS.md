@@ -8,7 +8,7 @@ Pure `.hnl`, single module (`src/index.hnl`, all 23 contract arrows).
 | path | role |
 | --- | --- |
 | `src/index.hnl` | all 23 contract arrows in one module |
-| `pkg.hnl` | manifest — `modules: ["rand-js"]`, deps `rand` + `js` |
+| `pkg.hnl` | manifest — `modules: ["rand-js"]`, dep `rand` only (`js` is a host/builtin contract, NOT a dep — see Contract) |
 | `scripts/hnl-gate.sh`, `workflows/gate.yaml` | the gate / bupha entry |
 
 ## Contract
@@ -21,6 +21,15 @@ Pure `.hnl`, single module (`src/index.hnl`, all 23 contract arrows).
   Numerical-Recipes LCG seeded by `(seed, k)`, four mixing rounds —
   deterministic, not cryptographic) since `Math.random` cannot be
   seeded.
+- `js` stays out of `pkg.hnl` `deps` and `.handl.toml`
+  `[dependencies]`: the `js` contract is a host/builtin surface
+  (compile-js binds `from "js"` to `__handl_rt` shims regardless of
+  dep tables). Declaring the dep makes `hnl run`/`hnl test` resolve
+  `js` to `lib-js`'s signature-only exports — `call` erases to `null`
+  and every call dies with "callee is not an arrow-value". Undeclared,
+  the import lowers to the ambient `"js.call"` callee and fails
+  honestly as `call_host: function 'js.call' not found` on hosts
+  without JS natives (the shape `scripts/hnl-gate.sh` tolerates).
 - Import from `"rand-js"` — single module, no per-arrow submodules.
 
 ## Verification
